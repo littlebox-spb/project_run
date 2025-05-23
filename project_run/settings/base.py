@@ -15,9 +15,9 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-COMPANY_NAME = 'MyCompany'
-SLOGAN = 'MySlogan'
-CONTACTS = 'MyContacts'
+COMPANY_NAME = 'Резвый бегун'
+SLOGAN = 'Бег - это молодость!'
+CONTACTS = 'г. Москва а/я 121521'
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
