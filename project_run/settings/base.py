@@ -17,7 +17,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 COMPANY_NAME = 'Резвый бегун'
 SLOGAN = 'Бег - это молодость!'
-CONTACTS = 'г. Москва а/я 121521'
+CONTACTS = 'г. Москва ул. Пушкинская д.1'
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
