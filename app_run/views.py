@@ -5,7 +5,4 @@ from django.conf import settings
 
 @api_view(['GET'])
 def company_details(request): 
-    company = settings.COMPANY_NAME
-    slogan = settings.SLOGAN
-    contacts = settings.CONTACTS
-    return Response({'company': company, 'slogan': slogan, 'contacts': contacts})
+    return Response({'company': settings.COMPANY_NAME, 'slogan': settings.SLOGAN, 'contacts': settings.CONTACTS})
