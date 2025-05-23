@@ -3,4 +3,5 @@ venv/
 .venv/
 __pycache__/
 .env
+.credit
 db.sqlite3
