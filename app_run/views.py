@@ -35,7 +35,7 @@ class RunStart(APIView):
             run_.save()
         else:
             return Response({"detail":"Забег не может быть начат"}, status.HTTP_400_BAD_REQUEST)
-        return Response(status=status.HTTP_200_OK)
+        return Response({"detail":"Забег успешно начат"}, status=status.HTTP_200_OK)
 
 class RunStop(APIView):
 
@@ -46,7 +46,7 @@ class RunStop(APIView):
             run_.save()
         else:
             return Response({"detail":"Забег не может быть завершен"}, status.HTTP_400_BAD_REQUEST)
-        return Response(status=status.HTTP_200_OK)
+        return Response({"detail":"Забег успешно завершен"},status=status.HTTP_200_OK)
 
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = User.objects.all()
