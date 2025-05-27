@@ -91,7 +91,7 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
 class Athlete(APIView):
 
     def get(self, request, user_id):
-        athlete, created = AthleteInfo.objects.get_or_create(athlete_id=user_id)
+        athlete, created = AthleteInfo.objects.get_or_create(user_id=user_id)
         serializer = AthleteSerializer(athlete)
         return Response(serializer.data)
 
@@ -100,7 +100,7 @@ class Athlete(APIView):
         weight=int(request.data.get('weight'))
         if 0<weight<900:
             athlete, created = AthleteInfo.objects.update_or_create(
-                athlete_id=user_id,
+                user_id=user_id,
                 defaults={
                     'weight': weight,
                     'goals': request.data.get('goals'),
