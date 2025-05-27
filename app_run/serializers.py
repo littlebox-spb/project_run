@@ -39,5 +39,4 @@ class UserSerializer(serializers.ModelSerializer):
         return "coach" if obj.is_staff else "athlete"
 
     def get_runs_finished(self, obj):
-        run_ = User.objects.filter(run__status="finished", id=obj.id)
-        return run_.count()
+        return User.objects.filter(run__status="finished", id=obj.id).count()
