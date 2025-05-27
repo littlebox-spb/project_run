@@ -9,8 +9,8 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Run
-from .serializers import RunSerializer, UserSerializer
+from .models import Run, AthleteInfo
+from .serializers import AthleteSerializer, RunSerializer, UserSerializer
 
 
 @api_view(["GET"])
@@ -86,3 +86,27 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
         else:
             qs = qs.filter(is_superuser=False)
         return qs
+
+
+class Athlete(APIView):
+
+    def get(self, request, user_id):
+        athlete, created = AthleteInfo.objects.get_or_create(athlete_id=user_id)
+        serializer = AthleteSerializer(athlete)
+        return Response(serializer.data)
+
+    def put(self, request, user_id):
+        user_ = get_object_or_404(User, id=user_id)
+        weight=int(request.data.get('weight'))
+        if 0<weight<900:
+            athlete, created = AthleteInfo.objects.update_or_create(
+                athlete_id=user_id,
+                defaults={
+                    'weight': request.data.get('weight'),
+                    'goals': request.data.get('goals'),
+                }
+            )
+        else:
+            return Response(
+                {"detail": "Вес введен неправильно"}, status.HTTP_400_BAD_REQUEST)
+        return Response({"detail": "Операция завершилась успешно"}, status=status.HTTP_201_CREATED)
