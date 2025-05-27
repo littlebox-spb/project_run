@@ -91,6 +91,7 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
 class Athlete(APIView):
 
     def get(self, request, user_id):
+        user_ = get_object_or_404(User, id=user_id)
         athlete, created = AthleteInfo.objects.get_or_create(user_id=user_id)
         serializer = AthleteSerializer(athlete)
         return Response(serializer.data)
