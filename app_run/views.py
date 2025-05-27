@@ -98,7 +98,12 @@ class Athlete(APIView):
 
     def put(self, request, user_id):
         user_ = get_object_or_404(User, id=user_id)
-        weight=int(request.data.get('weight'))
+        weight=request.data.get('weight')
+        if weight.isdigit():
+            weight=int(weight)
+        else:
+            return Response(
+                {"detail": "Вес должен быть числом"}, status.HTTP_400_BAD_REQUEST)
         if 0<weight<900:
             athlete, created = AthleteInfo.objects.update_or_create(
                 user_id=user_,
