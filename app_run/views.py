@@ -102,7 +102,7 @@ class Athlete(APIView):
             athlete, created = AthleteInfo.objects.update_or_create(
                 athlete_id=user_id,
                 defaults={
-                    'weight': request.data.get('weight'),
+                    'weight': weight,
                     'goals': request.data.get('goals'),
                 }
             )
