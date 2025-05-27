@@ -9,8 +9,8 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Run, AthleteInfo
-from .serializers import AthleteSerializer, RunSerializer, UserSerializer
+from .models import Run, AthleteInfo, Challenge
+from .serializers import AthleteSerializer, RunSerializer, UserSerializer, ChallengeSerializer
 
 
 @api_view(["GET"])
@@ -63,6 +63,10 @@ class RunStop(APIView):
             return Response(
                 {"detail": "Забег не может быть завершен"}, status.HTTP_400_BAD_REQUEST
             )
+        athlete=run_.athlete
+        if Run.objects.filter(status="finished", athlete=athlete).count() == 10:
+            challenge = Challenge.objects.create(full_name="Сделай 10 Забегов!",athlete=athlete)
+            challenge.save()
         return Response({"detail": "Забег успешно завершен"}, status=status.HTTP_200_OK)
 
 
@@ -116,3 +120,16 @@ class Athlete(APIView):
             return Response(
                 {"detail": "Вес введен неправильно"}, status.HTTP_400_BAD_REQUEST)
         return Response({"detail": "Операция завершилась успешно"}, status=status.HTTP_201_CREATED)
+
+
+class ChallengeViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Challenge.objects.all()
+    serializer_class = ChallengeSerializer
+
+    def get_queryset(self):
+        qs = self.queryset
+        athlete = self.request.query_params.get("athlete", None)
+        if athlete:
+            user_ = get_object_or_404(User, id=athlete)
+            qs = qs.filter(athlete=user_)
+        return qs
