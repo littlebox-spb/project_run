@@ -5,4 +5,3 @@ __pycache__/
 .env
 .credit
 db.sqlite3
-requirements.txt
