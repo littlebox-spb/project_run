@@ -92,7 +92,7 @@ class Athlete(APIView):
 
     def get(self, request, user_id):
         user_ = get_object_or_404(User, id=user_id)
-        athlete, created = AthleteInfo.objects.get_or_create(user_id=user_id)
+        athlete, created = AthleteInfo.objects.get_or_create(user_id=user_)
         serializer = AthleteSerializer(athlete)
         return Response(serializer.data)
 
@@ -101,7 +101,7 @@ class Athlete(APIView):
         weight=int(request.data.get('weight'))
         if 0<weight<900:
             athlete, created = AthleteInfo.objects.update_or_create(
-                user_id=user_id,
+                user_id=user_,
                 defaults={
                     'weight': weight,
                     'goals': request.data.get('goals'),
