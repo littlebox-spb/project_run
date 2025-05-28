@@ -149,7 +149,11 @@ class PositionViewSet(viewsets.ModelViewSet):
 
     def create(self, request, pk=None):
         run_id = request.query_params.get("run", None)
-        run = get_object_or_404(Run, id=run_id)
+        try:
+            run = Run.objects.get(id=run_id)
+        except Run.DoesNotExist:
+            return Response(
+                {"detail": "Забег не найден"}, status.HTTP_400_BAD_REQUEST)
         if run.status != "in_progress":
             return Response(
                 {"detail": "Забег должен быть в статусе 'in_progress'"}, status.HTTP_400_BAD_REQUEST
