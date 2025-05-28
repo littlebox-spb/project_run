@@ -140,12 +140,16 @@ class PositionViewSet(viewsets.ModelViewSet):
     queryset = Position.objects.all()
     serializer_class = PositionSerializer
 
-    def retrieve(self, request, id):
-        run_ = get_object_or_404(Run, id=id)
-        positions = Position.objects.filter(run=run_)
-        serializer = PositionSerializer(positions, many=True)
-        return Response(serializer.data)
-
+    def get_queryset(self):
+        qs = self.queryset
+        run_id = self.request.query_params.get("run", None)
+        if run_id:
+            try:
+                run_ = Run.objects.get(id=run_id)
+            except Run.DoesNotExist:
+                return []
+            qs = qs.filter(run=run_)
+        return qs
 
     def create(self, request, pk=None):
         run_id = request.query_params.get("run", None)

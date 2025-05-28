@@ -32,6 +32,6 @@ urlpatterns = [
     path("api/runs/<int:id>/start/", views.RunStart.as_view()),
     path("api/runs/<int:id>/stop/", views.RunStop.as_view()),
     path("api/athlete_info/<int:user_id>/", views.Athlete.as_view()),
-    path("api/positions/<int:id>/", views.PositionViewSet.as_view({'delete':'destroy','get':'retrieve'})),
+    path("api/positions/<int:id>/", views.PositionViewSet.as_view({'delete':'destroy'})),
     path("", include(router.urls)),
 ]
