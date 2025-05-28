@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
-from .models import AthleteInfo, Run, Challenge
+from .models import AthleteInfo, Run, Challenge, Position
 
 
 class RunAthleteSerializer(serializers.ModelSerializer):
@@ -54,3 +54,28 @@ class ChallengeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Challenge
         fields = "__all__"
+
+
+class PositionSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Position
+        fields = ["run", "latitude", "longitude"]
+
+    def validate_latitude(self, value):
+        try:
+            value = float(value)
+        except ValueError:
+            raise serializers.ValidationError("Широта должна быть числом.")
+        if -90.0 <= value <= 90.0:
+            return round(value,4)
+        raise serializers.ValidationError("Широта должна находиться в диапазоне от -90.0 до +90.0 градусов.")
+
+    def validate_longitude(self, value):
+        try:
+            value = float(value)
+        except ValueError:
+            raise serializers.ValidationError("Долгота должна быть числом.")
+        if -180.0 <= value <= 180.0:
+            return round(value,4)
+        raise serializers.ValidationError("Долгота должна находиться в диапазоне от -180.0 до +180.0 градусов.")

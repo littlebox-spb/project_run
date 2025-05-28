@@ -2,15 +2,16 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import status, viewsets
+from rest_framework import status,viewsets
 from rest_framework.decorators import api_view
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.decorators import action
 
-from .models import Run, AthleteInfo, Challenge
-from .serializers import AthleteSerializer, RunSerializer, UserSerializer, ChallengeSerializer
+from .models import Run, AthleteInfo, Challenge, Position
+from .serializers import AthleteSerializer, RunSerializer, UserSerializer, ChallengeSerializer, PositionSerializer
 
 
 @api_view(["GET"])
@@ -133,3 +134,35 @@ class ChallengeViewSet(viewsets.ReadOnlyModelViewSet):
             user_ = get_object_or_404(User, id=athlete)
             qs = qs.filter(athlete=user_)
         return qs
+
+
+class PositionViewSet(viewsets.ModelViewSet):
+    queryset = Position.objects.all()
+    serializer_class = PositionSerializer
+
+    def retrieve(self, request, id):
+        run_ = get_object_or_404(Run, id=id)
+        positions = Position.objects.filter(run=run_)
+        serializer = PositionSerializer(positions, many=True)
+        return Response(serializer.data)
+
+
+    def create(self, request, id):
+        print('Зашел в create')
+        run_ = get_object_or_404(Run, id=id)
+        if run_.status != "in_progress":
+            return Response(
+                {"detail": "Забег должен быть в статусе 'in_progress'"}, status.HTTP_400_BAD_REQUEST
+            )        
+        latitude = self.request.query_params.get("latitude", None)
+        longitude = self.request.query_params.get("longitude", None)
+        serializer = PositionSerializer(data={'run':run_.id, 'latitude':latitude, 'longitude':longitude})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def destroy(self,request, id):
+        run_ = get_object_or_404(Run, id=id)
+        Position.objects.filter(run=run_.id).delete()
+        return Response({"detail": "Операция завершилась успешно"}, status=status.HTTP_200_OK)
