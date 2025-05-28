@@ -147,16 +147,17 @@ class PositionViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
-    def create(self, request, id):
-        print('Зашел в create')
-        run_ = get_object_or_404(Run, id=id)
-        if run_.status != "in_progress":
+    def create(self, request, pk=None):
+        run_id = request.query_params.get("run", None)
+        run = get_object_or_404(Run, id=run_id)
+        if run.status != "in_progress":
             return Response(
                 {"detail": "Забег должен быть в статусе 'in_progress'"}, status.HTTP_400_BAD_REQUEST
             )        
         latitude = self.request.query_params.get("latitude", None)
         longitude = self.request.query_params.get("longitude", None)
-        serializer = PositionSerializer(data={'run':run_.id, 'latitude':latitude, 'longitude':longitude})
+        data={'run':run_id, 'latitude':latitude, 'longitude':longitude}
+        serializer = PositionSerializer(run,data=data,partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
