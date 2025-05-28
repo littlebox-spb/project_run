@@ -60,7 +60,7 @@ class PositionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Position
-        fields = ["run", "latitude", "longitude"]
+        fields = "__all__"
 
     def validate_latitude(self, value):
         try:
