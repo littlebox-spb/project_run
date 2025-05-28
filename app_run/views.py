@@ -170,10 +170,3 @@ class PositionViewSet(viewsets.ModelViewSet):
             super().create(request, pk)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def destroy(self, request, pk=None):
-        position = Position.objects.filter(id=pk)
-        if position:
-            super().destroy(request, pk)
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response(status=status.HTTP_400_BAD_REQUEST)
