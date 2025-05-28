@@ -152,7 +152,8 @@ class PositionViewSet(viewsets.ModelViewSet):
         return qs
 
     def create(self, request, pk=None):
-        run_id = request.query_params.get("run", None)
+        data = request.data
+        run_id = data.get("run", None)
         try:
             run = Run.objects.get(id=run_id)
         except Run.DoesNotExist:
@@ -162,9 +163,6 @@ class PositionViewSet(viewsets.ModelViewSet):
             return Response(
                 {"detail": "Забег должен быть в статусе 'in_progress'"}, status.HTTP_400_BAD_REQUEST
             )        
-        latitude = self.request.query_params.get("latitude", None)
-        longitude = self.request.query_params.get("longitude", None)
-        data={'run':run_id, 'latitude':latitude, 'longitude':longitude}
         serializer = PositionSerializer(run,data=data,partial=True)
         if serializer.is_valid():
             serializer.save()
