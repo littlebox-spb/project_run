@@ -12,9 +12,10 @@ from rest_framework.views import APIView
 from rest_framework.decorators import action
 from haversine import haversine
 from django.db.models import Sum
+from openpyxl import load_workbook, Workbook
 
-from .models import Run, AthleteInfo, Challenge, Position
-from .serializers import AthleteSerializer, RunSerializer, UserSerializer, ChallengeSerializer, PositionSerializer
+from .models import Run, AthleteInfo, Challenge, Position, CollectibleItem
+from .serializers import AthleteSerializer, RunSerializer, UserSerializer, ChallengeSerializer, PositionSerializer, CollectibleItemSerializer
 
 
 @api_view(["GET"])
@@ -166,3 +167,37 @@ class PositionViewSet(viewsets.ModelViewSet):
                 return []
             qs = qs.filter(run=run_)
         return qs
+
+
+@api_view(['POST'])
+def upload_file(request):
+    if "file" not in request.FILES:
+        return Response({"detail": "Файл не был загружен"}, status.HTTP_400_BAD_REQUEST)
+    if request.FILES["file"].content_type != "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
+        return Response({"detail": "Неверный формат файла"}, status.HTTP_400_BAD_REQUEST)
+    error_list = []
+    wb = load_workbook(request.FILES["file"])
+    sheet = wb.active
+    is_first_row = True
+    for row in sheet.iter_rows(values_only=True):
+        if is_first_row:
+            is_first_row = False
+            continue
+        data_row = {'name':row[0],
+                    'uid':row[1],
+                    'value':row[2],
+                    'latitude':row[3],
+                    'longitude':row[4],
+                    'picture':row[5],
+        }
+        serializer = CollectibleItemSerializer(data=data_row)
+        if serializer.is_valid():
+            serializer.save()
+        else:
+            error_list.append(row)
+    return Response({"error_list": error_list}, status=status.HTTP_201_CREATED)
+
+
+class CollectibleItemViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = CollectibleItem.objects.all()
+    serializer_class = CollectibleItemSerializer

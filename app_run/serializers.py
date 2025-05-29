@@ -1,7 +1,8 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
+import urllib.parse
 
-from .models import AthleteInfo, Run, Challenge, Position
+from .models import AthleteInfo, Run, Challenge, Position, CollectibleItem
 
 
 class RunAthleteSerializer(serializers.ModelSerializer):
@@ -84,3 +85,51 @@ class PositionSerializer(serializers.ModelSerializer):
         if -180.0 <= value <= 180.0:
             return round(value,4)
         raise serializers.ValidationError("Долгота должна находиться в диапазоне от -180.0 до +180.0 градусов.")
+
+class CollectibleItemSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = CollectibleItem
+        fields = '__all__'
+
+    def validate_name(self, value):
+        if value:
+            return value
+        raise serializers.ValidationError("Название должно быть задано.")
+
+    def validate_latitude(self, value):
+        try:
+            value = float(value)
+        except ValueError:
+            raise serializers.ValidationError("Широта должна быть числом.")
+        if -90.0 <= value <= 90.0:
+            return round(value,4)
+        raise serializers.ValidationError("Широта должна находиться в диапазоне от -90.0 до +90.0 градусов.")
+
+    def validate_longitude(self, value):
+        try:
+            value = float(value)
+        except ValueError:
+            raise serializers.ValidationError("Долгота должна быть числом.")
+        if -180.0 <= value <= 180.0:
+            return round(value,4)
+        raise serializers.ValidationError("Долгота должна находиться в диапазоне от -180.0 до +180.0 градусов.")
+
+    def validate_value(self, value):
+        if value is None:
+            raise serializers.ValidationError("Value должно быть задано.")
+        try:
+            value = int(value)
+        except ValueError:
+            raise serializers.ValidationError("Значение должно быть целым числом.")
+
+    def validate_picture(self, value):
+        try:
+            result = urllib.parse.urlparse(value)
+            return value
+        except ValueError:
+            raise serializers.ValidationError("Некорректный URL-адрес.")
+        if all([result.scheme, result.netloc]):
+            return value
+        else:            
+            raise serializers.ValidationError("Некорректный URL-адрес.")

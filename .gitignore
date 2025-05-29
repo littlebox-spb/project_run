@@ -5,3 +5,5 @@ __pycache__/
 .env
 .credit
 db.sqlite3
+upload_example.xlsx
+~$upload_example.xlsx
