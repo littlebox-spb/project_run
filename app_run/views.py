@@ -11,6 +11,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.decorators import action
 from haversine import haversine
+from django.db.models import Sum
 
 from .models import Run, AthleteInfo, Challenge, Position
 from .serializers import AthleteSerializer, RunSerializer, UserSerializer, ChallengeSerializer, PositionSerializer
@@ -79,6 +80,9 @@ class RunStop(APIView):
         if Run.objects.filter(status="finished", athlete=athlete).count() == 10:
             challenge = Challenge.objects.create(full_name="Сделай 10 Забегов!",athlete=athlete)
             challenge.save()
+        if Run.objects.filter(status="finished", athlete=athlete).aggregate(Sum('distance')) >= 50:
+            challenge = Challenge.objects.create(full_name="Пробеги 50 километров!",athlete=athlete)
+            challenge.save()            
         return Response({"detail": "Забег успешно завершен"}, status=status.HTTP_200_OK)
 
 
