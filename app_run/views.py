@@ -10,6 +10,7 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.decorators import action
+from haversine import haversine
 
 from .models import Run, AthleteInfo, Challenge, Position
 from .serializers import AthleteSerializer, RunSerializer, UserSerializer, ChallengeSerializer, PositionSerializer
@@ -60,6 +61,15 @@ class RunStop(APIView):
         run_ = get_object_or_404(Run, id=id)
         if run_.status == "in_progress":
             run_.status = "finished"
+            for n,position in enumerate(Position.objects.filter(run=run_)):
+                if n==0:
+                    dist=0
+                    start_point=(position.latitude,position.longitude)
+                else:
+                    next_point=(position.latitude,position.longitude)
+                    dist+=haversine(start_point, next_point)
+                    start_point = next_point
+            run_.distance=round(dist,3)
             run_.save()
         else:
             return Response(

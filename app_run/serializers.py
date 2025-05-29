@@ -18,7 +18,6 @@ class RunSerializer(serializers.ModelSerializer):
         model = Run
         fields = "__all__"
 
-
 class UserSerializer(serializers.ModelSerializer):
     type = serializers.SerializerMethodField()
     runs_finished = serializers.SerializerMethodField()
