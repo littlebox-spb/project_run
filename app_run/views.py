@@ -195,7 +195,7 @@ def upload_file(request):
             serializer.save()
         else:
             error_list.append(row)
-    return Response({"error_list": error_list}, status=status.HTTP_200_OK)
+    return Response(error_list, status=status.HTTP_200_OK)
 
 
 class CollectibleItemViewSet(viewsets.ReadOnlyModelViewSet):
