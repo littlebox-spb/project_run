@@ -62,6 +62,12 @@ class PositionSerializer(serializers.ModelSerializer):
         model = Position
         fields = "__all__"
 
+    def validate_run(self, value):
+        if value.status != "in_progress":
+            raise serializers.ValidationError("Забег должен быть в статусе 'in_progress'")
+        else:
+            return value 
+
     def validate_latitude(self, value):
         try:
             value = float(value)

@@ -151,22 +151,3 @@ class PositionViewSet(viewsets.ModelViewSet):
                 return []
             qs = qs.filter(run=run_)
         return qs
-
-    def create(self, request, pk=None):
-        data = request.data
-        run_id = data.get("run", None)
-        try:
-            run = Run.objects.get(id=run_id)
-        except Run.DoesNotExist:
-            return Response(
-                {"detail": "Забег не найден"}, status.HTTP_400_BAD_REQUEST)
-        if run.status != "in_progress":
-            return Response(
-                {"detail": "Забег должен быть в статусе 'in_progress'"}, status.HTTP_400_BAD_REQUEST
-            )        
-        serializer = PositionSerializer(run,data=data,partial=True)
-        if serializer.is_valid():
-            serializer.save()  
-            super().create(request, pk)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
