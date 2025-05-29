@@ -115,14 +115,6 @@ class CollectibleItemSerializer(serializers.ModelSerializer):
             return round(value,4)
         raise serializers.ValidationError("Долгота должна находиться в диапазоне от -180.0 до +180.0 градусов.")
 
-    def validate_value(self, value):
-        if value is None:
-            raise serializers.ValidationError("Value должно быть задано.")
-        try:
-            value = int(value)
-        except ValueError:
-            raise serializers.ValidationError("Значение должно быть целым числом.")
-
     def validate_picture(self, value):
         try:
             result = urllib.parse.urlparse(value)
