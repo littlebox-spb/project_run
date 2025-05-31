@@ -90,7 +90,14 @@ class CollectibleItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CollectibleItem
-        fields = '__all__'
+        fields = [
+            "name",
+            "uid",
+            "latitude",
+            "longitude",
+            "picture",
+            "value",
+        ]
 
     def validate_name(self, value):
         if value:
@@ -125,3 +132,14 @@ class CollectibleItemSerializer(serializers.ModelSerializer):
             return value
         else:            
             raise serializers.ValidationError("Некорректный URL-адрес.")
+        
+class UserItemsSerializer(UserSerializer): 
+    items = serializers.SerializerMethodField()
+
+    class Meta(UserSerializer.Meta):
+        model = User
+        fields = UserSerializer.Meta.fields + ['items']
+        
+    def get_items(self, obj):
+        items = CollectibleItem.objects.filter(items=obj)
+        return CollectibleItemSerializer(items, many=True).data

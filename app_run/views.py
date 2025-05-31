@@ -15,7 +15,7 @@ from django.db.models import Sum
 from openpyxl import load_workbook, Workbook
 
 from .models import Run, AthleteInfo, Challenge, Position, CollectibleItem
-from .serializers import AthleteSerializer, RunSerializer, UserSerializer, ChallengeSerializer, PositionSerializer, CollectibleItemSerializer
+from .serializers import AthleteSerializer, RunSerializer, UserSerializer, ChallengeSerializer, PositionSerializer, CollectibleItemSerializer, UserItemsSerializer
 
 
 @api_view(["GET"])
@@ -109,7 +109,13 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
             qs = qs.filter(is_superuser=False)
         return qs
 
-
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return UserSerializer
+        elif self.action == 'retrieve':
+            return UserItemsSerializer
+        return super().get_serializer_class()
+    
 class Athlete(APIView):
 
     def get(self, request, user_id):
@@ -156,6 +162,20 @@ class ChallengeViewSet(viewsets.ReadOnlyModelViewSet):
 class PositionViewSet(viewsets.ModelViewSet):
     queryset = Position.objects.all()
     serializer_class = PositionSerializer
+    
+    def create(self, request, *args, **kwargs):
+        run_id = request.data.get("run", None)
+        latitude = float(request.data.get("latitude", None))
+        longitude = float(request.data.get("longitude", None))
+        if run_id and latitude and longitude:
+            user_ = Run.objects.get(id=run_id).athlete
+            start_point=(latitude,longitude)
+            for item in CollectibleItem.objects.all():
+                item_point=(item.latitude,item.longitude)
+                if haversine(start_point, item_point) <= 100.0:
+                    item.items.add(user_)
+                    item.save()
+        return super().create(request, *args, **kwargs)
 
     def get_queryset(self):
         qs = self.queryset
