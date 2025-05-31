@@ -172,7 +172,7 @@ class PositionViewSet(viewsets.ModelViewSet):
             start_point=(latitude,longitude)
             for item in CollectibleItem.objects.all():
                 item_point=(item.latitude,item.longitude)
-                if haversine(start_point, item_point) <= 100.0:
+                if haversine(start_point, item_point) < 100.0:
                     item.items.add(user_)
                     item.save()
         return super().create(request, *args, **kwargs)
