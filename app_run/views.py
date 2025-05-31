@@ -10,7 +10,7 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.decorators import action
-from haversine import haversine
+from haversine import haversine, Unit
 from django.db.models import Sum
 from openpyxl import load_workbook, Workbook
 
