@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 import urllib.parse
+from django.db.models import Count, Q
 
 from .models import AthleteInfo, Run, Challenge, Position, CollectibleItem
 
@@ -39,7 +40,8 @@ class UserSerializer(serializers.ModelSerializer):
         return "coach" if obj.is_staff else "athlete"
 
     def get_runs_finished(self, obj):
-        return User.objects.filter(run__status="finished", id=obj.id).count()
+        # return User.objects.filter(run__status="finished", id=obj.id).count()
+        return User.objects.annotate(runs_finished=Count('run', filter=Q(run__status='finished'))).get(id=obj.id).runs_finished
 
 
 class AthleteSerializer(serializers.ModelSerializer):
