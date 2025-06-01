@@ -96,7 +96,6 @@ class RunStop(APIView):
 
 
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
-    # queryset = User.objects.all()
     queryset = User.objects.annotate(runs_finished=Count('run', filter=Q(run__status='finished')))#.get(id=obj.id).runs_finished
     serializer_class = UserSerializer
     pagination_class = ConfigPagination
