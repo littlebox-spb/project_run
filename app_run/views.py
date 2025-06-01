@@ -11,8 +11,9 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.decorators import action
 from haversine import haversine, Unit
-from django.db.models import Sum
+from django.db.models import Sum, Max, Min
 from openpyxl import load_workbook, Workbook
+from datetime import datetime
 
 from .models import Run, AthleteInfo, Challenge, Position, CollectibleItem
 from .serializers import AthleteSerializer, RunSerializer, UserSerializer, ChallengeSerializer, PositionSerializer, CollectibleItemSerializer, UserItemsSerializer
@@ -63,6 +64,10 @@ class RunStop(APIView):
         run_ = get_object_or_404(Run, id=id)
         if run_.status == "in_progress":
             run_.status = "finished"
+            start_time = Position.objects.filter(run=run_).aggregate(Min("date_time"))
+            end_time = Position.objects.filter(run=run_).aggregate(Max("date_time"))
+            total_seconds = (end_time['date_time__max']-start_time['date_time__min']).total_seconds()
+            run_.run_time_seconds=total_seconds
             for n,position in enumerate(Position.objects.filter(run=run_)):
                 if n==0:
                     dist=0
