@@ -14,6 +14,7 @@ from haversine import haversine, Unit
 from django.db.models import Sum, Max, Min
 from openpyxl import load_workbook, Workbook
 from datetime import datetime
+from django.db.models import Count, Q
 
 from .models import Run, AthleteInfo, Challenge, Position, CollectibleItem
 from .serializers import AthleteSerializer, RunSerializer, UserSerializer, ChallengeSerializer, PositionSerializer, CollectibleItemSerializer, UserItemsSerializer
@@ -95,7 +96,8 @@ class RunStop(APIView):
 
 
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = User.objects.all()
+    # queryset = User.objects.all()
+    queryset = User.objects.annotate(runs_finished=Count('run', filter=Q(run__status='finished')))#.get(id=obj.id).runs_finished
     serializer_class = UserSerializer
     pagination_class = ConfigPagination
     filter_backends = [SearchFilter, OrderingFilter]
