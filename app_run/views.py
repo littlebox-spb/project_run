@@ -69,9 +69,9 @@ class RunStop(APIView):
             if start_time['date_time__min'] and end_time['date_time__max']:
                 total_seconds = (end_time['date_time__max']-start_time['date_time__min']).total_seconds()
                 run_.run_time_seconds=total_seconds
+            dist=0
             for n,position in enumerate(Position.objects.filter(run=run_)):
                 if n==0:
-                    dist=0
                     start_point=(position.latitude,position.longitude)
                 else:
                     next_point=(position.latitude,position.longitude)
