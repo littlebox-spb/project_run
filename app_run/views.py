@@ -66,8 +66,9 @@ class RunStop(APIView):
             run_.status = "finished"
             start_time = Position.objects.filter(run=run_).aggregate(Min("date_time"))
             end_time = Position.objects.filter(run=run_).aggregate(Max("date_time"))
-            total_seconds = (end_time['date_time__max']-start_time['date_time__min']).total_seconds()
-            run_.run_time_seconds=total_seconds
+            if start_time['date_time__min'] and end_time['date_time__max']:
+                total_seconds = (end_time['date_time__max']-start_time['date_time__min']).total_seconds()
+                run_.run_time_seconds=total_seconds
             for n,position in enumerate(Position.objects.filter(run=run_)):
                 if n==0:
                     dist=0
