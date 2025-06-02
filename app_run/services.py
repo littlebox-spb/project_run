@@ -1,5 +1,5 @@
 from datetime import datetime
-from haversine import haversine, Unit
+from haversine import haversine
 
 class Point:
     def __init__(self, latitude, longitude, time):
@@ -16,7 +16,7 @@ class DistanceCalculator:
         start_point=(point1.latitude,point1.longitude)
         next_point=(point2.latitude,point2.longitude)
         if start_point and next_point:
-            dist=haversine(start_point, next_point, unit=Unit.METERS)
+            dist=haversine(start_point, next_point)
         return {'distance': abs(round(dist,3)), 'speed': abs(round(dist/total_seconds,2))} if total_seconds else {'distance': 0, 'speed': 0}
 
 
