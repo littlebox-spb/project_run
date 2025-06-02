@@ -11,10 +11,11 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.decorators import action
 from haversine import haversine, Unit
-from django.db.models import Sum, Max, Min
+from django.db.models import Sum, Max, Min, Avg
 from openpyxl import load_workbook, Workbook
 from datetime import datetime
 from django.db.models import Count, Q
+from .services import Point, DistanceCalculator
 
 from .models import Run, AthleteInfo, Challenge, Position, CollectibleItem
 from .serializers import AthleteSerializer, RunSerializer, UserSerializer, ChallengeSerializer, PositionSerializer, CollectibleItemSerializer, UserItemsSerializer
@@ -67,6 +68,7 @@ class RunStop(APIView):
             run_.status = "finished"
             start_time = Position.objects.filter(run=run_).aggregate(Min("date_time"))
             end_time = Position.objects.filter(run=run_).aggregate(Max("date_time"))
+            speed_avg = Position.objects.filter(run=run_).aggregate(Avg("speed"))
             if start_time['date_time__min'] and end_time['date_time__max']:
                 total_seconds = (end_time['date_time__max']-start_time['date_time__min']).total_seconds()
                 run_.run_time_seconds=total_seconds
@@ -79,6 +81,7 @@ class RunStop(APIView):
                     dist+=haversine(start_point, next_point)
                     start_point = next_point
             run_.distance=round(dist,3)
+            run_.speed=round(speed_avg['speed__avg'],2)
             run_.save()
         else:
             return Response(
@@ -96,7 +99,7 @@ class RunStop(APIView):
 
 
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = User.objects.annotate(runs_finished=Count('run', filter=Q(run__status='finished')))#.get(id=obj.id).runs_finished
+    queryset = User.objects.annotate(runs_finished=Count('run', filter=Q(run__status='finished')))
     serializer_class = UserSerializer
     pagination_class = ConfigPagination
     filter_backends = [SearchFilter, OrderingFilter]
@@ -174,6 +177,7 @@ class PositionViewSet(viewsets.ModelViewSet):
         run_id = request.data.get("run", None)
         latitude = float(request.data.get("latitude", None))
         longitude = float(request.data.get("longitude", None))
+        date_time = datetime.strptime(request.data.get("date_time", None),"%Y-%m-%dT%H:%M:%S.%f")
         if run_id and latitude and longitude:
             user_ = Run.objects.get(id=run_id).athlete
             start_point=(latitude,longitude)
@@ -182,7 +186,17 @@ class PositionViewSet(viewsets.ModelViewSet):
                 if abs(haversine(start_point, item_point, unit=Unit.METERS)) < 100.0:
                     item.items.add(user_)
                     item.save()
-        return super().create(request, *args, **kwargs)
+            current_point=Point(latitude,longitude,date_time.replace(tzinfo=None))
+            previous_data = Position.objects.filter(run=run_id).order_by("-date_time").first()
+            data = request.data.copy()
+            previous_point = Point(previous_data.latitude,previous_data.longitude,previous_data.date_time.replace(tzinfo=None))
+            moment_data = DistanceCalculator.distance(current_point,previous_point)
+            data['distance'] = previous_data.distance + moment_data['distance']
+            data['speed'] = moment_data['speed']
+            serializer = self.get_serializer(data=data)
+            serializer.is_valid(raise_exception=True)
+            self.perform_create(serializer)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def get_queryset(self):
         qs = self.queryset

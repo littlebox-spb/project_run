@@ -84,7 +84,7 @@ class PositionSerializer(serializers.ModelSerializer):
         if -180.0 <= value <= 180.0:
             return round(value,4)
         raise serializers.ValidationError("Долгота должна находиться в диапазоне от -180.0 до +180.0 градусов.")
-
+    
 class CollectibleItemSerializer(serializers.ModelSerializer):
 
     class Meta:
