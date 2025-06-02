@@ -17,7 +17,7 @@ class DistanceCalculator:
         next_point=(point2.latitude,point2.longitude)
         if start_point and next_point:
             dist=haversine(start_point, next_point, unit=Unit.METERS)
-        return {'distance': abs(round(dist,2)), 'speed': abs(round(dist/total_seconds,2))} if total_seconds else {'distance': 0, 'speed': 0}
+        return {'distance': abs(round(dist/1000,2)), 'speed': abs(round(dist/total_seconds,2))} if total_seconds else {'distance': 0, 'speed': 0}
 
 
 if __name__ == "__main__":
