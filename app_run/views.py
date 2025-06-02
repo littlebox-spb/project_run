@@ -189,10 +189,14 @@ class PositionViewSet(viewsets.ModelViewSet):
             current_point=Point(latitude,longitude,date_time.replace(tzinfo=None))
             previous_data = Position.objects.filter(run=run_id).order_by("-date_time").first()
             data = request.data.copy()
-            previous_point = Point(previous_data.latitude,previous_data.longitude,previous_data.date_time.replace(tzinfo=None))
-            moment_data = DistanceCalculator.distance(current_point,previous_point)
-            data['distance'] = previous_data.distance + moment_data['distance']
-            data['speed'] = moment_data['speed']
+            if previous_data is None:
+                data['distance'] = 0.0
+                data['speed'] = 0.0
+            else:
+                previous_point = Point(previous_data.latitude,previous_data.longitude,previous_data.date_time.replace(tzinfo=None))
+                moment_data = DistanceCalculator.distance(current_point,previous_point)
+                data['distance'] = previous_data.distance + moment_data['distance']
+                data['speed'] = moment_data['speed']
             serializer = self.get_serializer(data=data)
             serializer.is_valid(raise_exception=True)
             self.perform_create(serializer)
