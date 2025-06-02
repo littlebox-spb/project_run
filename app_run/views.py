@@ -94,7 +94,10 @@ class RunStop(APIView):
         distance = Run.objects.filter(status="finished", athlete=athlete).aggregate(Sum('distance'))
         if distance['distance__sum'] >= 50.0:
             challenge = Challenge.objects.create(full_name="Пробеги 50 километров!",athlete=athlete)
-            challenge.save()            
+            challenge.save()           
+        if run_.distance >= 2 and run_.speed <= 10: 
+            challenge = Challenge.objects.create(full_name="2 километра за 10 минут!",athlete=athlete)
+            challenge.save()   
         return Response({"detail": "Забег успешно завершен"}, status=status.HTTP_200_OK)
 
 
