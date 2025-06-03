@@ -1,9 +1,10 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 import urllib.parse
-from django.db.models import Count, Q
+from django.shortcuts import get_object_or_404
+import json
 
-from .models import AthleteInfo, Run, Challenge, Position, CollectibleItem
+from .models import AthleteInfo, Run, Challenge, Position, CollectibleItem, Subscriber
 
 
 class RunAthleteSerializer(serializers.ModelSerializer):
@@ -142,3 +143,43 @@ class UserItemsSerializer(UserSerializer):
     def get_items(self, obj):
         items = CollectibleItem.objects.filter(items=obj)
         return CollectibleItemSerializer(items, many=True).data
+    
+class UserCoachSerializer(UserItemsSerializer): 
+    athletes = serializers.SerializerMethodField()
+
+    class Meta(UserSerializer.Meta):
+        model = User
+        fields = UserItemsSerializer.Meta.fields + ['athletes']
+        
+    def get_athletes(self, obj):
+        athletes = Subscriber.objects.filter(coach=obj.id)
+        return (athlete_id for athlete_id in list(athletes.values_list('athlete', flat=True)))
+
+
+class UserAthleteSerializer(UserItemsSerializer): 
+    coach = serializers.SerializerMethodField()
+
+    class Meta(UserSerializer.Meta):
+        model = User
+        fields = UserItemsSerializer.Meta.fields + ['coach']
+        
+    def get_coach(self, obj):
+        coach = Subscriber.objects.filter(athlete=obj.id).first()
+        return coach.coach.id if coach else []
+    
+    
+class SubscribeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Subscriber
+        fields = ["coach", "athlete"]
+        
+    def validate(self, data):
+        if data["coach"] == data["athlete"]:
+            raise serializers.ValidationError("Пользователи не могут быть подписаны сами на себя.")
+        double_subscribe = Subscriber.objects.filter(coach=data["coach"], athlete=data["athlete"]).count()
+        if double_subscribe:
+            raise serializers.ValidationError("Подписка уже оформлена.")
+        user_ = get_object_or_404(User, id=data["athlete"].id)
+        if user_.is_staff:
+            raise serializers.ValidationError("Подписываться могут только пользователи с типом 'athlete'")
+        return data

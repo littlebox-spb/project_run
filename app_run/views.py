@@ -17,8 +17,10 @@ from datetime import datetime
 from django.db.models import Count, Q
 from .services import Point, DistanceCalculator
 
-from .models import Run, AthleteInfo, Challenge, Position, CollectibleItem
-from .serializers import AthleteSerializer, RunSerializer, UserSerializer, ChallengeSerializer, PositionSerializer, CollectibleItemSerializer, UserItemsSerializer
+from .models import Run, AthleteInfo, Challenge, Position, CollectibleItem, Subscriber
+from .serializers import (AthleteSerializer, RunSerializer, UserSerializer, ChallengeSerializer, PositionSerializer, 
+                            CollectibleItemSerializer, UserItemsSerializer, SubscribeSerializer, UserCoachSerializer,
+                            UserAthleteSerializer)
 
 
 @api_view(["GET"])
@@ -126,7 +128,11 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
         if self.action == 'list':
             return UserSerializer
         elif self.action == 'retrieve':
-            return UserItemsSerializer
+            user_ = User.objects.get(id=self.kwargs.get('pk'))
+            if user_.is_staff:
+                return UserCoachSerializer
+            else:
+                return UserAthleteSerializer
         return super().get_serializer_class()
     
 class Athlete(APIView):
@@ -249,3 +255,20 @@ def upload_file(request):
 class CollectibleItemViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = CollectibleItem.objects.all()
     serializer_class = CollectibleItemSerializer
+
+    
+class SubscribeViewSet(APIView):
+
+    def post(self, request, coach_id):
+        user_ = get_object_or_404(User, id=coach_id)
+        if not user_.is_staff:
+            return Response({"detail": "Нельзя подписаться на атлета - только на тренера"}, status.HTTP_400_BAD_REQUEST)
+        data_row = {'coach':coach_id,
+                    'athlete':int(request.data['athlete']),
+        }
+        serializer = SubscribeSerializer(data=data_row)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"detail": "Подписка завершилась успешно"}, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
