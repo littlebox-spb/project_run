@@ -269,6 +269,6 @@ class SubscribeViewSet(APIView):
         serializer = SubscribeSerializer(data=data_row)
         if serializer.is_valid():
             serializer.save()
-            return Response({"detail": "Подписка завершилась успешно"}, status=status.HTTP_201_CREATED)
+            return Response({"detail": "Подписка завершилась успешно"}, status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
